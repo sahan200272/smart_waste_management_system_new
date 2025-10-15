@@ -1,0 +1,12 @@
+{
+  "name": "smart-waste-management",
+  "version": "1.0.0",
+  "description": "Smart Waste Management System",
+  "scripts": {
+    "dev": "concurrently -n BACKEND,FRONTEND -c green,blue \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "sim": "npm --prefix backend run sim"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}
