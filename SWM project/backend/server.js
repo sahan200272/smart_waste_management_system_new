@@ -28,14 +28,14 @@ const server = createServer(app);
 // Configure Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: process.env.VITE_API_URL || "http://localhost:3000",
+    origin: process.env.FRONTEND_URL || "http://localhost:5175",
     methods: ["GET", "POST", "PATCH"]
   }
 });
 
 // Middleware
 app.use(cors({
-  origin: process.env.VITE_API_URL || "http://localhost:3000",
+  origin: process.env.FRONTEND_URL || "http://localhost:5175",
   credentials: true
 }));
 app.use(express.json());

@@ -181,6 +181,82 @@ class BinController {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  async createBin(req, res) {
+    try {
+      const { binId, category, location, level = 0, mixed = false } = req.body;
+
+      // Validate required fields
+      if (!binId || !category) {
+        return res.status(400).json({
+          error: 'Missing required fields: binId, category'
+        });
+      }
+
+      // Validate category
+      if (!['biodegradable', 'recyclable', 'non_biodegradable'].includes(category)) {
+        return res.status(400).json({
+          error: 'Invalid category. Must be: biodegradable, recyclable, or non_biodegradable'
+        });
+      }
+
+      // Check if bin already exists
+      const existingBin = await Bin.findOne({ binId });
+      if (existingBin) {
+        return res.status(409).json({ error: 'Bin with this ID already exists' });
+      }
+
+      // Validate level
+      if (level < 0 || level > 100) {
+        return res.status(400).json({
+          error: 'Level must be between 0 and 100'
+        });
+      }
+
+      // Create new bin
+      const bin = new Bin({
+        binId,
+        category,
+        level,
+        mixed,
+        location: location || {
+          lat: 6.9271 + (Math.random() - 0.5) * 0.1, // Random location in Colombo area
+          lng: 79.8612 + (Math.random() - 0.5) * 0.1,
+          address: location?.address || `Location for ${binId}`
+        },
+        status: mixed ? 'segregation_required' : (level >= 85 ? 'maintenance_needed' : 'ok'),
+        faultCode: mixed ? 'mixed_waste_detected' : null,
+        lastSeenAt: new Date()
+      });
+
+      await bin.save();
+
+      // Emit socket event
+      this.io.emit('bin:update', bin);
+
+      // Send notifications if needed
+      if (bin.status === 'segregation_required') {
+        await this.notificationService.notifyResident({
+          userId: 'residents',
+          binId: bin.binId,
+          type: 'segregation',
+          message: `New bin ${bin.binId} requires segregation - mixed waste detected`
+        });
+      } else if (bin.level >= 85) {
+        await this.notificationService.notifyResident({
+          userId: 'residents',
+          binId: bin.binId,
+          type: 'level',
+          message: `New bin ${bin.binId} is ${bin.level}% full and needs attention`
+        });
+      }
+
+      res.status(201).json(bin);
+    } catch (error) {
+      console.error('Error creating bin:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
 
 export default BinController;

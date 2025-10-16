@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useMaintenanceStore from '../store/useMaintenanceStore';
-import { maintenanceApi } from '../api/http';
+import useBinsStore from '../store/useBinsStore';
+import { maintenanceApi, binApi } from '../api/http';
 import MaintenanceTicketCard from '../components/MaintenanceTicketCard';
 
 const MaintenanceQueue = () => {
@@ -15,13 +16,28 @@ const MaintenanceQueue = () => {
     getCompletedTickets
   } = useMaintenanceStore();
 
+  const { addBin, setBins } = useBinsStore();
+
   const [filter, setFilter] = useState('all');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showAddBinModal, setShowAddBinModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [scheduleData, setScheduleData] = useState({
     scheduledAt: '',
     notes: ''
   });
+  const [newBinData, setNewBinData] = useState({
+    binId: '',
+    category: 'biodegradable',
+    level: 0,
+    mixed: false,
+    location: {
+      address: '',
+      lat: '',
+      lng: ''
+    }
+  });
+  const [submittingBin, setSubmittingBin] = useState(false);
 
   useEffect(() => {
     loadTickets();
@@ -77,6 +93,69 @@ const MaintenanceQueue = () => {
     }
   };
 
+  const handleAddBin = () => {
+    setNewBinData({
+      binId: '',
+      category: 'biodegradable',
+      level: 0,
+      mixed: false,
+      location: {
+        address: '',
+        lat: '',
+        lng: ''
+      }
+    });
+    setShowAddBinModal(true);
+  };
+
+  const handleAddBinSubmit = async (e) => {
+    e.preventDefault();
+    if (!newBinData.binId || !newBinData.category) return;
+
+    try {
+      setSubmittingBin(true);
+      
+      // Prepare the data
+      const binData = {
+        binId: newBinData.binId.trim(),
+        category: newBinData.category,
+        level: parseInt(newBinData.level) || 0,
+        mixed: newBinData.mixed
+      };
+
+      // Add location if provided
+      if (newBinData.location.address || newBinData.location.lat || newBinData.location.lng) {
+        binData.location = {
+          address: newBinData.location.address || `Location for ${binData.binId}`,
+          lat: parseFloat(newBinData.location.lat) || (6.9271 + (Math.random() - 0.5) * 0.1),
+          lng: parseFloat(newBinData.location.lng) || (79.8612 + (Math.random() - 0.5) * 0.1)
+        };
+      }
+
+      console.log('Creating bin with data:', binData);
+      
+      const newBin = await binApi.create(binData);
+      console.log('Bin created successfully:', newBin);
+      
+      // Add to local store
+      addBin(newBin);
+      
+      // Refresh bins list
+      const binsResponse = await binApi.getAll();
+      const bins = Array.isArray(binsResponse) ? binsResponse : binsResponse?.bins || [];
+      setBins(bins);
+      
+      setShowAddBinModal(false);
+      alert(`Bin ${newBin.binId} created successfully!`);
+      
+    } catch (error) {
+      console.error('Error creating bin:', error);
+      alert(`Failed to create bin: ${error.message || 'Unknown error'}`);
+    } finally {
+      setSubmittingBin(false);
+    }
+  };
+
   const getFilteredTickets = () => {
     switch (filter) {
       case 'open':
@@ -112,12 +191,23 @@ const MaintenanceQueue = () => {
               <h1 className="text-3xl font-bold text-gray-900">Maintenance Queue</h1>
               <p className="text-gray-600 mt-1">Manage maintenance tickets and schedules</p>
             </div>
-            <Link
-              to="/"
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Back to Dashboard
-            </Link>
+            <div className="flex space-x-3">
+              <button
+                onClick={handleAddBin}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add New Bin
+              </button>
+              <Link
+                to="/"
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Back to Dashboard
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -223,6 +313,191 @@ const MaintenanceQueue = () => {
                     className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
                   >
                     Schedule
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Bin Modal */}
+      {showAddBinModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Add New Bin
+              </h3>
+              
+              <form onSubmit={handleAddBinSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bin ID *
+                    </label>
+                    <input
+                      type="text"
+                      value={newBinData.binId}
+                      onChange={(e) => setNewBinData({
+                        ...newBinData,
+                        binId: e.target.value
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="e.g., BIN-007"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Category *
+                    </label>
+                    <select
+                      value={newBinData.category}
+                      onChange={(e) => setNewBinData({
+                        ...newBinData,
+                        category: e.target.value
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="biodegradable">Biodegradable</option>
+                      <option value="recyclable">Recyclable</option>
+                      <option value="non_biodegradable">Non-Biodegradable</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Initial Fill Level (%)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={newBinData.level}
+                      onChange={(e) => setNewBinData({
+                        ...newBinData,
+                        level: parseInt(e.target.value) || 0
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="0"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Status
+                    </label>
+                    <div className="flex items-center space-x-4 pt-2">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="mixed"
+                          checked={!newBinData.mixed}
+                          onChange={() => setNewBinData({
+                            ...newBinData,
+                            mixed: false
+                          })}
+                          className="mr-2"
+                        />
+                        Normal
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="mixed"
+                          checked={newBinData.mixed}
+                          onChange={() => setNewBinData({
+                            ...newBinData,
+                            mixed: true
+                          })}
+                          className="mr-2"
+                        />
+                        Mixed Waste
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Location Address (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={newBinData.location.address}
+                    onChange={(e) => setNewBinData({
+                      ...newBinData,
+                      location: {
+                        ...newBinData.location,
+                        address: e.target.value
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="e.g., Main Street, Colombo"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Latitude (Optional)
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={newBinData.location.lat}
+                      onChange={(e) => setNewBinData({
+                        ...newBinData,
+                        location: {
+                          ...newBinData.location,
+                          lat: e.target.value
+                        }
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="6.9271"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Longitude (Optional)
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={newBinData.location.lng}
+                      onChange={(e) => setNewBinData({
+                        ...newBinData,
+                        location: {
+                          ...newBinData.location,
+                          lng: e.target.value
+                        }
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="79.8612"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddBinModal(false)}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+                    disabled={submittingBin}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors disabled:opacity-50"
+                    disabled={submittingBin}
+                  >
+                    {submittingBin ? 'Creating...' : 'Create Bin'}
                   </button>
                 </div>
               </form>

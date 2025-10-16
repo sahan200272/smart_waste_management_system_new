@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
 class ApiError extends Error {
   constructor(message, status, response) {
@@ -58,6 +58,12 @@ export const binApi = {
   
   // Get bin by ID
   getById: (binId) => request(`/api/bins/${binId}`),
+  
+  // Create new bin
+  create: (data) => request('/api/bins', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
   
   // Ingest sensor data
   ingestSensorData: (data) => request('/api/bins/ingest', {

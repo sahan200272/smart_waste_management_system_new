@@ -17,6 +17,14 @@ router.post('/ingest', async (req, res) => {
   return binController.ingestSensorData(req, res);
 });
 
+// POST /api/bins - Create new bin
+router.post('/', async (req, res) => {
+  if (!binController) {
+    return res.status(500).json({ error: 'Bin controller not initialized' });
+  }
+  return binController.createBin(req, res);
+});
+
 // GET /api/bins - List all bins
 router.get('/', async (req, res) => {
   if (!binController) {

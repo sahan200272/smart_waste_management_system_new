@@ -53,9 +53,9 @@ const binSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for efficient queries
-binSchema.index({ binId: 1 });
+// Index for efficient queries (binId already indexed via unique constraint)
 binSchema.index({ status: 1 });
 binSchema.index({ lastSeenAt: 1 });
+binSchema.index({ category: 1 });
 
 export default mongoose.model('Bin', binSchema);
