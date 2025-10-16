@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useNotificationsStore from '../store/useNotificationsStore';
+import useBinsStore from '../store/useBinsStore';
 import { reportsApi, binApi } from '../api/http';
 import NotificationCard from '../components/NotificationCard';
 
@@ -13,12 +14,18 @@ const ResidentAppMock = () => {
     setError
   } = useNotificationsStore();
 
-  const [bins, setBins] = useState([]);
+  // Use bins from global store and local state as fallback
+  const { bins: globalBins, setBins: setGlobalBins } = useBinsStore();
+  const [localBins, setLocalBins] = useState([]);
+  const [binsLoading, setBinsLoading] = useState(false);
   const [reportForm, setReportForm] = useState({
     binId: '',
     issue: ''
   });
   const [submitting, setSubmitting] = useState(false);
+
+  // Use global bins if available, otherwise use local bins
+  const bins = globalBins.length > 0 ? globalBins : localBins;
 
   useEffect(() => {
     loadData();
@@ -27,18 +34,52 @@ const ResidentAppMock = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [notificationsData, binsData] = await Promise.all([
-        reportsApi.getNotifications('residents'),
-        binApi.getAll()
+      setBinsLoading(true);
+      setError(null);
+      
+      console.log('Loading resident app data...');
+      
+      // Load notifications and bins
+      const [notificationsResponse, binsResponse] = await Promise.all([
+        reportsApi.getNotifications('residents').catch(err => {
+          console.warn('Failed to load notifications:', err);
+          return [];
+        }),
+        binApi.getAll().catch(err => {
+          console.warn('Failed to load bins:', err);
+          return [];
+        })
       ]);
       
-      setNotifications(notificationsData);
-      setBins(binsData);
+      console.log('Notifications response:', notificationsResponse);
+      console.log('Bins response:', binsResponse);
+      
+      // Handle different response structures
+      const notifications = Array.isArray(notificationsResponse) 
+        ? notificationsResponse 
+        : notificationsResponse?.notifications || [];
+        
+      const bins = Array.isArray(binsResponse) 
+        ? binsResponse 
+        : binsResponse?.bins || [];
+      
+      console.log('Processed notifications:', notifications);
+      console.log('Processed bins:', bins);
+      
+      setNotifications(notifications);
+      setLocalBins(bins);
+      
+      // Also update global bins store if we got data
+      if (bins.length > 0) {
+        setGlobalBins(bins);
+      }
+      
     } catch (error) {
       console.error('Error loading data:', error);
-      setError('Failed to load data');
+      setError('Failed to load data. Please check if the backend server is running.');
     } finally {
       setLoading(false);
+      setBinsLoading(false);
     }
   };
 
@@ -146,7 +187,16 @@ const ResidentAppMock = () => {
 
         {/* Report Form */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Report Segregation Issue</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Report Segregation Issue</h2>
+            <button
+              onClick={loadData}
+              className="px-3 py-1 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              disabled={binsLoading}
+            >
+              {binsLoading ? 'Loading...' : 'Refresh Bins'}
+            </button>
+          </div>
           
           <form onSubmit={handleReportSubmit} className="space-y-4">
             <div>
@@ -158,14 +208,35 @@ const ResidentAppMock = () => {
                 onChange={(e) => setReportForm({ ...reportForm, binId: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+                disabled={binsLoading}
               >
-                <option value="">Choose a bin...</option>
-                {bins.map(bin => (
-                  <option key={bin.binId} value={bin.binId}>
-                    {bin.binId} - {bin.category} ({bin.level}% full)
-                  </option>
-                ))}
+                <option value="">
+                  {binsLoading ? 'Loading bins...' : 'Choose a bin...'}
+                </option>
+                {bins.length > 0 ? (
+                  bins.map(bin => (
+                    <option key={bin.binId || bin._id} value={bin.binId}>
+                      {bin.binId} - {bin.category} ({bin.level}% full)
+                    </option>
+                  ))
+                ) : (
+                  !binsLoading && (
+                    <option value="" disabled>
+                      No bins available. Please start the backend server and simulator.
+                    </option>
+                  )
+                )}
               </select>
+              
+              {/* Debug info - remove in production */}
+              <div className="mt-2 text-xs text-gray-500">
+                Debug: {bins.length} bins loaded
+                {bins.length > 0 && (
+                  <div className="mt-1">
+                    Sample bin: {JSON.stringify(bins[0])}
+                  </div>
+                )}
+              </div>
             </div>
             
             <div>
