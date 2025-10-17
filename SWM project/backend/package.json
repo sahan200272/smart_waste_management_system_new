@@ -7,7 +7,12 @@
     "dev": "node server.js",
     "sim": "node ./scripts/simulator.js",
     "start": "nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --config=../jest.simple.config.js",
+    "test:coverage": "jest --config=../jest.simple.config.js --coverage",
+    "test:fieldops": "jest src/test/fieldops.test.js",
+    "test:api": "node ./scripts/test-api.js",
+    "test:submit": "node ./scripts/test-submit.js",
+    "check:tickets": "node ./scripts/check-tickets.js"
   },
   "keywords": [],
   "author": "",
@@ -21,5 +26,11 @@
     "node-fetch": "^3.3.2",
     "nodemon": "^3.1.10",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.2.0",
+    "concurrently": "^9.2.1",
+    "jest": "^30.2.0",
+    "supertest": "^7.1.4"
   }
 }

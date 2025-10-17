@@ -1,12 +1,1 @@
-{
-  "name": "smart-waste-management",
-  "version": "1.0.0",
-  "description": "Smart Waste Management System",
-  "scripts": {
-    "dev": "concurrently -n BACKEND,FRONTEND -c green,blue \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
-    "sim": "npm --prefix backend run sim"
-  },
-  "devDependencies": {
-    "concurrently": "^9.0.0"
-  }
-}
+{"name":"smart-waste-management","version":"1.0.0","description":"Smart Waste Management System with Field Operations","private":true,"scripts":{"dev":"backend\\node_modules\\.bin\\concurrently -n BACKEND,FRONTEND -c green,blue \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"","install:all":"npm install --prefix backend && npm install --prefix frontend","test:backend":"npm --prefix backend run test","test:api":"npm --prefix backend run test:api","check:tickets":"npm --prefix backend run check:tickets"}}
