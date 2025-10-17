@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Test coverage reports
+coverage/
+lcov-report/
+*.lcov
