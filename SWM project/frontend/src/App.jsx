@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import BinDetail from './pages/BinDetail';
 import MaintenanceQueue from './pages/MaintenanceQueue';
 import ResidentAppMock from './pages/ResidentAppMock';
+import FieldOpsApp from './fieldops/FieldOpsApp';
 import './App.css';
 
 function App() {
@@ -61,6 +62,7 @@ function App() {
           <Route path="/bin/:binId" element={<BinDetail />} />
           <Route path="/maintenance" element={<MaintenanceQueue />} />
           <Route path="/residents" element={<ResidentAppMock />} />
+          <Route path="/fieldops/*" element={<FieldOpsApp />} />
         </Routes>
       </div>
     </Router>

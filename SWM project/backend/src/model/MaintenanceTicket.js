@@ -8,8 +8,7 @@ const maintenanceTicketSchema = new mongoose.Schema({
   },
   binId: {
     type: String,
-    required: true,
-    index: true
+    required: true
   },
   reason: {
     type: String,
@@ -44,8 +43,7 @@ const maintenanceTicketSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for efficient queries
-maintenanceTicketSchema.index({ ticketId: 1 });
+// Index for efficient queries (ticketId already has unique: true, so we don't need to index it again)
 maintenanceTicketSchema.index({ binId: 1 });
 maintenanceTicketSchema.index({ status: 1 });
 maintenanceTicketSchema.index({ priority: 1 });
