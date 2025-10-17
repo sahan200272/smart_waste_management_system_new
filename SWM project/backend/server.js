@@ -10,6 +10,10 @@ import binRoutes, { setBinController } from './src/routes/binRoutes.js';
 import maintenanceRoutes, { setMaintenanceController } from './src/routes/maintenanceRoutes.js';
 import reportRoutes, { setReportController } from './src/routes/reportRoutes.js';
 
+
+import specialCollectionRoutes from './routes/specialCollectionRoutes.js';
+
+
 // Import controllers
 import BinController from './src/controllers/binController.js';
 import MaintenanceController from './src/controllers/maintenanceController.js';
@@ -50,6 +54,9 @@ const binController = new BinController(io, notificationService);
 const maintenanceController = new MaintenanceController(io);
 const reportController = new ReportController(io, notificationService);
 
+// Initialize routes with dependencies
+const specialCollectionRouter = specialCollectionRoutes(io, notificationService);
+
 // Set controllers in routes
 setBinController(binController);
 setMaintenanceController(maintenanceController);
@@ -59,6 +66,8 @@ setReportController(reportController);
 app.use('/api/bins', binRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/reports', reportRoutes);
+
+app.use('/api/special-collections', specialCollectionRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -131,3 +140,4 @@ process.on('SIGINT', () => {
 });
 
 export { io };
+
