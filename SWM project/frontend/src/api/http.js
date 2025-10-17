@@ -144,7 +144,7 @@ export const specialCollectionAPI = {
   createCollection: async (collectionData) => {
     return request('/api/special-collections', {
       method: 'POST',
-      body: collectionData,
+      body: JSON.stringify(collectionData),
     });
   },
 
@@ -162,7 +162,7 @@ export const specialCollectionAPI = {
   scheduleCollection: async (collectionId, truckId) => {
     return request(`/api/special-collections/${collectionId}/schedule`, {
       method: 'PATCH',
-      body: { truckId },
+      body: JSON.stringify({ truckId }),
     });
   },
 
@@ -170,7 +170,7 @@ export const specialCollectionAPI = {
   optimizeRoutes: async (date) => {
     return request('/api/special-collections/optimize-routes', {
       method: 'POST',
-      body: { date },
+      body: JSON.stringify({ date }),
     });
   },
 
@@ -179,7 +179,7 @@ export const specialCollectionAPI = {
   updateCollectionStatus: async (collectionId, status, actualDuration) => {
     return request(`/api/special-collections/${collectionId}/status`, {
       method: 'PATCH',
-      body: { status, actualDuration },
+      body: JSON.stringify({ status, actualDuration }),
     });
   },
 

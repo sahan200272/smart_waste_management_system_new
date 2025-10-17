@@ -11,7 +11,7 @@ import maintenanceRoutes, { setMaintenanceController } from './src/routes/mainte
 import reportRoutes, { setReportController } from './src/routes/reportRoutes.js';
 
 
-import specialCollectionRoutes from './routes/specialCollectionRoutes.js';
+import specialCollectionRoutes from './src/routes/specialCollectionRoutes.js';
 
 
 // Import controllers
@@ -32,14 +32,14 @@ const server = createServer(app);
 // Configure Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: process.env.VITE_API_URL || "http://localhost:3000",
+    origin: process.env.FRONTEND_URL || process.env.VITE_API_URL || "http://localhost:5173",
     methods: ["GET", "POST", "PATCH"]
   }
 });
 
 // Middleware
 app.use(cors({
-  origin: process.env.VITE_API_URL || "http://localhost:3000",
+  origin: process.env.FRONTEND_URL || process.env.VITE_API_URL || "http://localhost:5173",
   credentials: true
 }));
 app.use(express.json());
