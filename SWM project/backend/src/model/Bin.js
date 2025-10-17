@@ -53,8 +53,7 @@ const binSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for efficient queries
-binSchema.index({ binId: 1 });
+// Index for efficient queries (binId already has unique: true, so we don't need to index it again)
 binSchema.index({ status: 1 });
 binSchema.index({ lastSeenAt: 1 });
 
