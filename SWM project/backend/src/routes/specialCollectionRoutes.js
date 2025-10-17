@@ -1,5 +1,5 @@
 import express from 'express';
-import SpecialCollectionController from '../controllers/specialCollectionController';
+import SpecialCollectionController from '../controllers/specialCollectionController.js';
 
 const router = express.Router();
 

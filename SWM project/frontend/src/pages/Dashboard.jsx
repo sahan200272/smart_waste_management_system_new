@@ -164,6 +164,12 @@ const Dashboard = () => {
                 Refresh Data
               </button>
               <Link
+                to="/special-collections"
+                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+              >
+                Special Collections
+              </Link>
+              <Link
                 to="/maintenance"
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >

@@ -11,7 +11,7 @@ import maintenanceRoutes, { setMaintenanceController } from './src/routes/mainte
 import reportRoutes, { setReportController } from './src/routes/reportRoutes.js';
 
 
-import specialCollectionRoutes from './routes/specialCollectionRoutes.js';
+import specialCollectionRoutes from './src/routes/specialCollectionRoutes.js';
 
 
 // Import controllers
