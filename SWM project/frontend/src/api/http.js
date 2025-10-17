@@ -135,3 +135,56 @@ export const healthApi = {
 };
 
 export { ApiError };
+
+
+
+// Special Collection API functions (using consistent fetch)
+export const specialCollectionAPI = {
+  // Create new special collection request
+  createCollection: async (collectionData) => {
+    return request('/api/special-collections', {
+      method: 'POST',
+      body: collectionData,
+    });
+  },
+
+  // Get all collections with filters
+  getCollections: async (filters = {}) => {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+      if (filters[key]) params.append(key, filters[key]);
+    });
+    
+    return request(`/api/special-collections?${params}`);
+  },
+
+  // Schedule collection
+  scheduleCollection: async (collectionId, truckId) => {
+    return request(`/api/special-collections/${collectionId}/schedule`, {
+      method: 'PATCH',
+      body: { truckId },
+    });
+  },
+
+  // Optimize routes
+  optimizeRoutes: async (date) => {
+    return request('/api/special-collections/optimize-routes', {
+      method: 'POST',
+      body: { date },
+    });
+  },
+
+
+   // Update collection status
+  updateCollectionStatus: async (collectionId, status, actualDuration) => {
+    return request(`/api/special-collections/${collectionId}/status`, {
+      method: 'PATCH',
+      body: { status, actualDuration },
+    });
+  },
+
+  // Get statistics
+  getStatistics: async (period = 'month') => {
+    return request(`/api/special-collections/statistics?period=${period}`);
+  }
+};

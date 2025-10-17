@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import BinDetail from './pages/BinDetail';
 import MaintenanceQueue from './pages/MaintenanceQueue';
 import ResidentAppMock from './pages/ResidentAppMock';
+import SpecialCollectionManagement from './pages/SpecialCollectionManagement';
 import './App.css';
 
 function App() {
@@ -59,6 +60,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/bin/:binId" element={<BinDetail />} />
+          <Route path="/special-collections" element={<SpecialCollectionManagement />} />
           <Route path="/maintenance" element={<MaintenanceQueue />} />
           <Route path="/residents" element={<ResidentAppMock />} />
         </Routes>
