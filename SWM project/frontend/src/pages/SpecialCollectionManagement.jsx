@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Container,
   Row,
@@ -136,10 +137,10 @@ const SpecialCollectionManagement = () => {
           <h3>WastePro</h3>
         </div>
         <nav className="sidebar-nav">
-          <a href="#" className="nav-item active">
+          <Link to="/" className="nav-item active">
             <span className="nav-icon">📊</span>
             Dashboard
-          </a>
+          </Link>
           <a href="#" className="nav-item">
             <span className="nav-icon">🛣️</span>
             Routes
