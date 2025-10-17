@@ -9,6 +9,7 @@ import mongoose from 'mongoose';
 import binRoutes, { setBinController } from './src/routes/binRoutes.js';
 import maintenanceRoutes, { setMaintenanceController } from './src/routes/maintenanceRoutes.js';
 import reportRoutes, { setReportController } from './src/routes/reportRoutes.js';
+import fieldOpsRoutes from './src/routes/fieldOpsRoutes.js';
 
 // Import controllers
 import BinController from './src/controllers/binController.js';
@@ -28,14 +29,14 @@ const server = createServer(app);
 // Configure Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: process.env.VITE_API_URL || "http://localhost:3000",
-    methods: ["GET", "POST", "PATCH"]
+    origin: ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174"],
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"]
   }
 });
 
 // Middleware
 app.use(cors({
-  origin: process.env.VITE_API_URL || "http://localhost:3000",
+  origin: ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174"],
   credentials: true
 }));
 app.use(express.json());
@@ -58,6 +59,7 @@ setReportController(reportController);
 // Routes
 app.use('/api/bins', binRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/fieldops', fieldOpsRoutes);
 app.use('/api/reports', reportRoutes);
 
 // Health check endpoint
