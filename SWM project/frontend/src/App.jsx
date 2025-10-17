@@ -9,6 +9,8 @@ import Dashboard from './pages/Dashboard';
 import BinDetail from './pages/BinDetail';
 import MaintenanceQueue from './pages/MaintenanceQueue';
 import ResidentAppMock from './pages/ResidentAppMock';
+import ResidentDashboard from './pages/ResidentDashboard';
+import PaymentDashboard from './pages/PaymentDashboard';
 import './App.css';
 
 function App() {
@@ -61,6 +63,8 @@ function App() {
           <Route path="/bin/:binId" element={<BinDetail />} />
           <Route path="/maintenance" element={<MaintenanceQueue />} />
           <Route path="/residents" element={<ResidentAppMock />} />
+          <Route path="/resident-dashboard" element={<ResidentDashboard />} />
+          <Route path="/payments" element={<PaymentDashboard />} />
         </Routes>
       </div>
     </Router>

@@ -9,11 +9,15 @@ import mongoose from 'mongoose';
 import binRoutes, { setBinController } from './src/routes/binRoutes.js';
 import maintenanceRoutes, { setMaintenanceController } from './src/routes/maintenanceRoutes.js';
 import reportRoutes, { setReportController } from './src/routes/reportRoutes.js';
+import paymentRoutes, { setPaymentController } from './src/routes/paymentRoutes.js';
+import residentRoutes, { setResidentController } from './src/routes/residentRoutes.js';
 
 // Import controllers
 import BinController from './src/controllers/binController.js';
 import MaintenanceController from './src/controllers/maintenanceController.js';
 import ReportController from './src/controllers/reportController.js';
+import PaymentController from './src/controllers/paymentController.js';
+import ResidentController from './src/controllers/residentController.js';
 
 // Import services
 import NotificationService from './src/services/NotificationService.js';
@@ -28,14 +32,14 @@ const server = createServer(app);
 // Configure Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: process.env.VITE_API_URL || "http://localhost:3000",
+    origin: process.env.VITE_API_URL || "http://localhost:5173",
     methods: ["GET", "POST", "PATCH"]
   }
 });
 
 // Middleware
 app.use(cors({
-  origin: process.env.VITE_API_URL || "http://localhost:3000",
+  origin: process.env.VITE_API_URL || "http://localhost:5173",
   credentials: true
 }));
 app.use(express.json());
@@ -49,16 +53,24 @@ const heartbeatService = new HeartbeatService(io, notificationService);
 const binController = new BinController(io, notificationService);
 const maintenanceController = new MaintenanceController(io);
 const reportController = new ReportController(io, notificationService);
+const paymentController = new PaymentController();
 
 // Set controllers in routes
 setBinController(binController);
 setMaintenanceController(maintenanceController);
 setReportController(reportController);
+setPaymentController(paymentController);
+
+// Initialize resident controller
+const residentController = new ResidentController();
+setResidentController(residentController);
 
 // Routes
 app.use('/api/bins', binRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/residents', residentRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

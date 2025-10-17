@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// Normalize base URL; allow values with or without trailing /api
+const RAW_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
+const API_BASE_URL = RAW_BASE;
 
 class ApiError extends Error {
   constructor(message, status, response) {
@@ -10,7 +12,12 @@ class ApiError extends Error {
 }
 
 async function request(endpoint, options = {}) {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  // If base already ends with /api and path starts with /api, avoid double /api
+  const base = API_BASE_URL.endsWith('/api') && path.startsWith('/api')
+    ? API_BASE_URL.slice(0, -4)
+    : API_BASE_URL;
+  const url = `${base}${path}`;
   
   const config = {
     headers: {
@@ -134,4 +141,4 @@ export const healthApi = {
   check: () => request('/api/health'),
 };
 
-export { ApiError };
+export { ApiError, request };

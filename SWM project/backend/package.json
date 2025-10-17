@@ -6,8 +6,11 @@
   "scripts": {
     "dev": "node server.js",
     "sim": "node ./scripts/simulator.js",
+    "seed:residents": "node ./scripts/seedResidentData.js",
     "start": "nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +23,14 @@
     "mongoose": "^8.19.1",
     "node-fetch": "^3.3.2",
     "nodemon": "^3.1.10",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.2.0",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "mongodb-memory-server": "^10.2.3",
+    "supertest": "^7.1.4"
   }
 }
