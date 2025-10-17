@@ -1,3 +1,4 @@
+// SpecialCollectionCard.jsx (updated styling)
 import React from 'react';
 import { Card, Badge, Button, Stack } from 'react-bootstrap';
 
@@ -35,54 +36,57 @@ const SpecialCollectionCard = ({ collection, onSchedule, onStatusUpdate }) => {
   };
 
   return (
-    <Card className="h-100 shadow-sm">
-      <Card.Header className="d-flex justify-content-between align-items-center">
-        <Badge bg={getPriorityVariant(collection.priority)}>
-          {collection.priority.toUpperCase()}
-        </Badge>
-        <Badge bg={getStatusVariant(collection.status)}>
-          {collection.status.replace('-', ' ').toUpperCase()}
-        </Badge>
+    <Card className="collection-card">
+      <Card.Header className="card-header-modern">
+        <Stack direction="horizontal" className="justify-content-between">
+          <Badge bg={getPriorityVariant(collection.priority)} className="priority-badge">
+            {collection.priority.toUpperCase()}
+          </Badge>
+          <Badge bg={getStatusVariant(collection.status)} className="status-badge">
+            {collection.status.replace('-', ' ').toUpperCase()}
+          </Badge>
+        </Stack>
       </Card.Header>
       
       <Card.Body>
-        <Card.Title className="text-capitalize">
+        <Card.Title className="collection-title">
           {collection.wasteType} Waste Collection
         </Card.Title>
         
-        <Card.Text>
-          <strong>Description:</strong> {collection.description}
+        <Card.Text className="collection-description">
+          {collection.description}
         </Card.Text>
         
-        <Stack gap={2}>
-          <div>
-            <small className="text-muted">Scheduled Date</small>
-            <div>{formatDate(collection.scheduledDate)}</div>
+        <Stack gap={2} className="collection-details">
+          <div className="detail-item">
+            <small className="detail-label">Scheduled Date</small>
+            <div className="detail-value">{formatDate(collection.scheduledDate)}</div>
           </div>
           
           {collection.specialInstructions && (
-            <div>
-              <small className="text-muted">Special Instructions</small>
-              <div>{collection.specialInstructions}</div>
+            <div className="detail-item">
+              <small className="detail-label">Special Instructions</small>
+              <div className="detail-value">{collection.specialInstructions}</div>
             </div>
           )}
           
           {collection.assignedTruck && (
-            <div>
-              <small className="text-muted">Assigned Truck</small>
-              <div>{collection.assignedTruck.licensePlate}</div>
+            <div className="detail-item">
+              <small className="detail-label">Assigned Truck</small>
+              <div className="detail-value">{collection.assignedTruck.licensePlate}</div>
             </div>
           )}
         </Stack>
       </Card.Body>
       
-      <Card.Footer>
-        <Stack direction="horizontal" gap={2}>
+      <Card.Footer className="card-footer-modern">
+        <Stack direction="horizontal" gap={2} className="action-buttons">
           {collection.status === 'pending' && onSchedule && (
             <Button 
               variant="primary" 
               size="sm"
               onClick={() => onSchedule(collection)}
+              className="action-btn"
             >
               Schedule
             </Button>
@@ -93,6 +97,7 @@ const SpecialCollectionCard = ({ collection, onSchedule, onStatusUpdate }) => {
               variant="success" 
               size="sm"
               onClick={() => onStatusUpdate(collection._id, 'completed')}
+              className="action-btn"
             >
               Mark Complete
             </Button>
@@ -101,6 +106,7 @@ const SpecialCollectionCard = ({ collection, onSchedule, onStatusUpdate }) => {
           <Button 
             variant="outline-secondary" 
             size="sm"
+            className="action-btn"
             onClick={() => {/* View details */}}
           >
             Details
