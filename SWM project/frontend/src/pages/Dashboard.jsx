@@ -139,39 +139,29 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-gradient-to-r from-emerald-50 to-blue-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Smart Waste Management</h1>
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Smart Waste Management</h1>
               <p className="text-gray-600 mt-1">Real-time bin monitoring and maintenance</p>
-              <div className="flex items-center mt-2">
-                <div className={`w-2 h-2 rounded-full mr-2 ${
-                  connectionStatus === 'connected' ? 'bg-green-500' : 
-                  connectionStatus === 'disconnected' ? 'bg-red-500' : 'bg-yellow-500'
-                }`}></div>
-                <span className="text-sm text-gray-500">
-                  {connectionStatus === 'connected' ? 'Connected to backend' :
-                   connectionStatus === 'disconnected' ? 'Backend disconnected' : 'Checking connection...'}
-                </span>
-              </div>
             </div>
             <nav className="flex space-x-4">
               <button
                 onClick={loadData}
-                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors shadow-sm"
               >
                 Refresh Data
               </button>
               <Link
                 to="/maintenance"
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
               >
                 Maintenance
               </Link>
               <Link
                 to="/residents"
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
               >
                 Residents
               </Link>
@@ -183,7 +173,7 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,7 +187,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
             <div className="flex items-center">
               <div className="p-2 bg-red-100 rounded-lg">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -211,7 +201,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
             <div className="flex items-center">
               <div className="p-2 bg-yellow-100 rounded-lg">
                 <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,7 +216,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
             <div className="flex items-center">
               <div className="p-2 bg-green-100 rounded-lg">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,13 +278,10 @@ const Dashboard = () => {
         <div>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">All Bins ({bins.length})</h2>
           {bins.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg shadow">
+            <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-dashed border-gray-200">
               <div className="text-6xl mb-4">📦</div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No Bins Found</h3>
-              <p className="text-gray-500 mb-4">Start the simulator to see live bin data</p>
-              <div className="text-sm text-gray-400">
-                <p>Run: <code className="bg-gray-100 px-2 py-1 rounded">npm run sim</code></p>
-              </div>
+              <p className="text-gray-500">No bin data available at the moment.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

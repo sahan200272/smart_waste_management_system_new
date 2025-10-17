@@ -88,12 +88,20 @@ const ResidentAppMock = () => {
               <h1 className="text-3xl font-bold text-gray-900">Resident App</h1>
               <p className="text-gray-600 mt-1">Notifications and waste management</p>
             </div>
-            <Link
-              to="/"
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Back to Dashboard
-            </Link>
+            <div className="flex space-x-3">
+              <Link
+                to="/payments"
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+              >
+                💳 Make Payment
+              </Link>
+              <Link
+                to="/"
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Back to Dashboard
+              </Link>
+            </div>
           </div>
         </div>
       </header>

@@ -31,101 +31,72 @@ class BinController {
         });
       }
 
-      // Find or create bin
-      let bin = await Bin.findOne({ binId });
-      
-      if (!bin) {
-        // Create new bin with default location (can be updated later)
-        bin = new Bin({
-          binId,
-          location: {
-            lat: 6.9271 + (Math.random() - 0.5) * 0.1, // Random location in Colombo area
-            lng: 79.8612 + (Math.random() - 0.5) * 0.1,
-            address: `Location for ${binId}`
-          },
-          level,
-          category,
-          mixed: mixed || false,
-          lastSeenAt: deviceTs ? new Date(deviceTs) : new Date()
-        });
-      } else {
-        // Update existing bin
-        bin.level = level;
-        bin.category = category;
-        bin.mixed = mixed || false;
-        bin.lastSeenAt = deviceTs ? new Date(deviceTs) : new Date();
+      const now = deviceTs ? new Date(deviceTs) : new Date();
+
+      // Determine status based on business rules
+      let newStatus = 'ok';
+      let faultCode = null;
+      if (mixed) {
+        newStatus = 'segregation_required';
+        faultCode = 'mixed_waste_detected';
       }
 
-      // Business logic for status updates
-      let statusChanged = false;
-      const previousStatus = bin.status;
+      // Upsert bin and set fields atomically
+      const updated = await Bin.findOneAndUpdate(
+        { binId },
+        {
+          $set: {
+            binId,
+            level,
+            category,
+            mixed: !!mixed,
+            lastSeenAt: now,
+            status: newStatus,
+            faultCode,
+            // Provide a default location on first insert
+            location: {
+              lat: 6.9271 + (Math.random() - 0.5) * 0.1,
+              lng: 79.8612 + (Math.random() - 0.5) * 0.1,
+              address: `Location for ${binId}`
+            }
+          }
+        },
+        { upsert: true, new: true }
+      );
 
-      // Check for mixed waste
-      if (bin.mixed && bin.status !== 'segregation_required') {
-        bin.status = 'segregation_required';
-        bin.faultCode = 'mixed_waste_detected';
-        statusChanged = true;
-      } else if (!bin.mixed && bin.status === 'segregation_required') {
-        bin.status = 'ok';
-        bin.faultCode = null;
-        statusChanged = true;
-      }
+      // Emit updates
+      this.io.emit('bin:update', updated);
 
-      // Check for high fill level
-      if (bin.level >= 85 && bin.status === 'ok') {
-        // Create resident notification for high fill level
+      // High level notification (keep separate from segregation)
+      if (!mixed && level >= 90) {
         await this.notificationService.notifyResident({
           userId: 'residents',
-          binId: bin.binId,
+          binId: updated.binId,
           type: 'level',
-          message: `Bin ${bin.binId} is ${bin.level}% full and needs attention`
+          message: `Bin ${updated.binId} is ${level}% full and needs attention`
         });
       }
 
-      await bin.save();
-
-      // Emit socket events
-      this.io.emit('bin:update', bin);
-
-      if (statusChanged) {
-        if (bin.status === 'segregation_required') {
-          // Emit alert for segregation required
-          this.io.emit('bin:alert', {
-            binId: bin.binId,
-            message: `Bin ${bin.binId} requires segregation - mixed waste detected`,
-            type: 'segregation',
-            timestamp: new Date()
-          });
-
-          // Notify residents about segregation requirement
-          await this.notificationService.notifyResident({
-            userId: 'residents',
-            binId: bin.binId,
-            type: 'segregation',
-            message: `Bin ${bin.binId} requires segregation - mixed waste detected`
-          });
-        } else if (bin.status === 'ok' && previousStatus === 'segregation_required') {
-          // Segregation completed
-          this.io.emit('bin:alert', {
-            binId: bin.binId,
-            message: `Bin ${bin.binId} segregation completed`,
-            type: 'segregation_resolved',
-            timestamp: new Date()
-          });
-        }
-      }
-
-      res.json(bin);
+      res.status(200).json({
+        success: true,
+        message: 'Sensor data processed successfully',
+        data: updated
+      });
     } catch (error) {
       console.error('Error ingesting sensor data:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }
 
-  async listBins(req, res) {
+  async getAllBins(req, res) {
     try {
-      const bins = await Bin.find().sort({ binId: 1 });
-      res.json(bins);
+      const { status, category } = req.query || {};
+      const filter = {};
+      if (status) filter.status = status;
+      if (category) filter.category = category;
+
+      const bins = await Bin.find(filter);
+      res.status(200).json({ success: true, data: bins });
     } catch (error) {
       console.error('Error fetching bins:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -141,7 +112,7 @@ class BinController {
         return res.status(404).json({ error: 'Bin not found' });
       }
 
-      res.json(bin);
+      res.status(200).json({ success: true, data: bin });
     } catch (error) {
       console.error('Error fetching bin:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -151,31 +122,24 @@ class BinController {
   async markSegregationDone(req, res) {
     try {
       const { binId } = req.params;
-      const bin = await Bin.findOne({ binId });
+      const updated = await Bin.findOneAndUpdate(
+        { binId },
+        { mixed: false },
+        { new: true }
+      );
 
-      if (!bin) {
+      if (!updated) {
         return res.status(404).json({ error: 'Bin not found' });
       }
 
-      if (bin.status === 'segregation_required') {
-        bin.status = 'ok';
-        bin.mixed = false;
-        bin.faultCode = null;
-        await bin.save();
+      // Emit updates
+      this.io.emit('bin:update', updated);
 
-        // Emit updates
-        this.io.emit('bin:update', bin);
-        this.io.emit('bin:alert', {
-          binId: bin.binId,
-          message: `Bin ${bin.binId} segregation completed`,
-          type: 'segregation_resolved',
-          timestamp: new Date()
-        });
-
-        res.json(bin);
-      } else {
-        res.status(400).json({ error: 'Bin does not require segregation' });
-      }
+      res.status(200).json({
+        success: true,
+        message: 'Segregation marked as completed',
+        data: updated
+      });
     } catch (error) {
       console.error('Error marking segregation done:', error);
       res.status(500).json({ error: 'Internal server error' });
